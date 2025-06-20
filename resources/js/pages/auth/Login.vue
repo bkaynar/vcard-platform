@@ -1,93 +1,100 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Head, useForm } from '@inertiajs/vue3';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
+import InputError from '@/components/InputError.vue';
+import TextLink from '@/components/TextLink.vue';
 import { LoaderCircle } from 'lucide-vue-next';
 
 defineProps<{
-    status?: string;
-    canResetPassword: boolean;
+  status?: string;
+  canResetPassword: boolean;
 }>();
 
 const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
+  email: '',
+  password: '',
+  remember: false,
 });
 
 const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
+  form.post(route('login'), {
+    onFinish: () => form.reset('password'),
+  });
 };
 </script>
 
 <template>
-    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
-        <Head title="Log in" />
+  <Head title="Giriş Yap" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+  <div class="min-h-screen flex flex-col md:flex-row">
+    <!-- Sol taraf: Animasyon -->
+    <div class="hidden md:flex md:w-1/2 items-center justify-center bg-gray-100 p-6">
+      <!-- Buraya bir Lottie animasyon veya SVG yerleştirebilirsin -->
+      <img src="/images/login-illustration.svg" alt="Giriş" class="w-3/4 h-auto animate-fade-in" />
+    </div>
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        v-model="form.email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="form.errors.email" />
-                </div>
+    <!-- Sağ taraf: Login formu -->
+    <div class="w-full md:w-1/2 flex items-center justify-center p-6">
+      <div class="w-full max-w-md space-y-6">
+        <h2 class="text-3xl font-bold text-center">Hesabınıza Giriş Yapın</h2>
+        <p class="text-sm text-muted-foreground text-center">Devam etmek için bilgilerinizi giriniz</p>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
+        <form @submit.prevent="submit" class="space-y-4">
+          <!-- E-posta -->
+          <div>
+            <Label for="email">E-posta Adresi</Label>
+            <Input
+              id="email"
+              type="email"
+              v-model="form.email"
+              placeholder="ornek@eposta.com"
+              required
+              autofocus
+              autocomplete="email"
+            />
+            <InputError :message="form.errors.email" />
+          </div>
 
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
+          <!-- Şifre -->
+          <div>
+            <Label for="password">Şifre</Label>
+            <Input
+              id="password"
+              type="password"
+              v-model="form.password"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+            <InputError :message="form.errors.password" />
+          </div>
 
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
-                </Button>
-            </div>
+          <!-- Beni Hatırla + Şifreyi Unuttum -->
+          <div class="flex items-center justify-between">
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" v-model="form.remember" class="rounded border-gray-300" />
+              <span>Beni hatırla</span>
+            </label>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
-            </div>
+            <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm text-blue-600">
+              Şifremi unuttum
+            </TextLink>
+          </div>
+
+          <!-- Giriş Butonu -->
+          <Button type="submit" class="w-full" :disabled="form.processing">
+            <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+            Giriş Yap
+          </Button>
         </form>
-    </AuthBase>
+
+        <p class="text-center text-sm text-muted-foreground">
+          Henüz hesabınız yok mu?
+          <TextLink :href="route('register')">Hesap Oluştur</TextLink>
+        </p>
+      </div>
+    </div>
+  </div>
 </template>

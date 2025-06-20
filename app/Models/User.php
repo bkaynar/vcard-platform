@@ -2,31 +2,35 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use  HasFactory, Notifiable, HasRoles;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Toplu atamaya izin verilen alanlar.
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'phone',
+        'address',
+        'bio',
+        'profile_photo',
+        'cover_photo',
+        'socials',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Gizli alanlar (JSON response'ta gösterilmez).
      */
     protected $hidden = [
         'password',
@@ -34,15 +38,49 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Dönüştürülmesi gereken alanlar.
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'socials' => 'array',
+    ];
+
+    /**
+     * Profil fotoğrafı tam URL olarak döner.
+     */
+    protected function profilePhotoUrl(): Attribute
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return Attribute::get(
+            fn() =>
+            $this->profile_photo
+                ? asset("storage/{$this->profile_photo}")
+                : asset('images/default-avatar.png')
+        );
+    }
+
+    /**
+     * Kapak fotoğrafı tam URL olarak döner.
+     */
+    protected function coverPhotoUrl(): Attribute
+    {
+        return Attribute::get(
+            fn() =>
+            $this->cover_photo
+                ? asset("storage/{$this->cover_photo}")
+                : asset('images/default-cover.jpg')
+        );
+    }
+
+    /**
+     * Profil linki (route örneği).
+     */
+    public function getProfileUrl(): string
+    {
+        return route('vcard.show', ['username' => $this->username]);
+    }
+
+    public function vcardVisits()
+    {
+        return $this->hasMany(VcardVisit::class);
     }
 }
