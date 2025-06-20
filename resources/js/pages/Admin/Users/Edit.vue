@@ -2,18 +2,36 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
-import { ref, computed } from 'vue';
-import { UserPlus, User, Phone, Mail, Key, MapPin, FileText, ImageIcon, Eye, EyeOff, Upload, X, Plus, Share2 } from 'lucide-vue-next';
+import { ref, computed, onMounted } from 'vue';
+import { UserPen, User, Phone, Mail, Key, MapPin, FileText, ImageIcon, Eye, EyeOff, Upload, X, Plus, Share2 } from 'lucide-vue-next';
+
+// Props - Backend'den gelen user verisi
+interface Props {
+    user: {
+        id: number;
+        name: string;
+        username: string;
+        email: string;
+        phone?: string;
+        address?: string;
+        bio?: string;
+        profile_photo?: string;
+        cover_photo?: string;
+        socials?: Record<string, string>;
+    };
+}
+
+const props = defineProps<Props>();
 
 const form = useForm({
-    name: '',
-    username: '',
-    email: '',
+    name: props.user.name || '',
+    username: props.user.username || '',
+    email: props.user.email || '',
     password: '',
     password_confirmation: '',
-    phone: '',
-    address: '',
-    bio: '',
+    phone: props.user.phone || '',
+    address: props.user.address || '',
+    bio: props.user.bio || '',
     profile_photo: null as File | null,
     cover_photo: null as File | null,
     socials: [] as Array<{ platform: string, username: string }>,
@@ -48,8 +66,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('admin.users.index'),
     },
     {
-        title: 'Yeni Kullanıcı',
-        href: route('admin.users.create'),
+        title: `${props.user.name} - Düzenle`,
+        href: route('admin.users.edit', props.user.id),
     },
 ];
 
@@ -62,7 +80,7 @@ const dragOverCover = ref(false);
 
 // Form validation states
 const isFormValid = computed(() => {
-    return form.name && form.username && form.email && form.password && form.password_confirmation;
+    return form.name && form.username && form.email;
 });
 
 const passwordStrength = computed(() => {
@@ -86,6 +104,24 @@ const passwordStrength = computed(() => {
     ];
 
     return levels[score];
+});
+
+// Existing photos preview
+onMounted(() => {
+    if (props.user.profile_photo) {
+        profilePhotoPreview.value = `/storage/${props.user.profile_photo}`;
+    }
+    if (props.user.cover_photo) {
+        coverPhotoPreview.value = `/storage/${props.user.cover_photo}`;
+    }
+
+    // Convert socials object to array
+    if (props.user.socials) {
+        form.socials = Object.entries(props.user.socials).map(([platform, username]) => ({
+            platform,
+            username
+        }));
+    }
 });
 
 const handleProfilePhotoChange = (event: Event) => {
@@ -157,12 +193,12 @@ const handleCoverDrop = (event: DragEvent) => {
 
 const removeProfilePhoto = () => {
     form.profile_photo = null;
-    profilePhotoPreview.value = null;
+    profilePhotoPreview.value = props.user.profile_photo ? `/storage/${props.user.profile_photo}` : null;
 };
 
 const removeCoverPhoto = () => {
     form.cover_photo = null;
-    coverPhotoPreview.value = null;
+    coverPhotoPreview.value = props.user.cover_photo ? `/storage/${props.user.cover_photo}` : null;
 };
 
 const togglePasswordVisibility = () => {
@@ -201,28 +237,28 @@ const getSocialLabel = (platform: string) => {
 };
 
 const submit = () => {
-    form.post(route('admin.users.store'));
+    form.put(route('admin.users.update', props.user.id));
 };
 </script>
 
 <template>
 
-    <Head title="Yeni Kullanıcı" />
+    <Head :title="`${user.name} - Düzenle`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6 max-w-4xl mx-auto">
             <!-- Header Section -->
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center space-x-4">
-                    <div class="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
-                        <UserPlus class="h-6 w-6 text-white" />
+                    <div class="p-3 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl shadow-lg">
+                        <UserPen class="h-6 w-6 text-white" />
                     </div>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                            Yeni Kullanıcı Oluştur
+                            Kullanıcı Düzenle
                         </h1>
                         <p class="text-gray-600 dark:text-gray-400 mt-1">
-                            Sisteme yeni bir kullanıcı ekleyin
+                            {{ user.name }} kullanıcısının bilgilerini düzenleyin
                         </p>
                     </div>
                 </div>
@@ -244,10 +280,10 @@ const submit = () => {
                     <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
                         <span>Form Tamamlanma</span>
                         <span>{{Math.round(Object.values(form.data()).filter(val => val !== '' && val !== null).length
-                            / Object.keys(form.data()).length * 100)}}%</span>
+                            / Object.keys(form.data()).length * 100) }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                        <div class="bg-gradient-to-r from-green-500 to-teal-600 h-2 rounded-full transition-all duration-300"
                             :style="{ width: Math.round(Object.values(form.data()).filter(val => val !== '' && val !== null).length / Object.keys(form.data()).length * 100) + '%' }">
                         </div>
                     </div>
@@ -263,7 +299,7 @@ const submit = () => {
                             Temel Bilgiler
                         </h2>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Kullanıcının temel kimlik bilgilerini girin
+                            Kullanıcının temel kimlik bilgilerini düzenleyin
                         </p>
                     </div>
                     <div class="p-6">
@@ -401,7 +437,7 @@ const submit = () => {
                             Güvenlik Bilgileri
                         </h2>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Kullanıcının giriş bilgilerini belirleyin
+                            Şifre değiştirmek için yeni şifre giriniz (isteğe bağlı)
                         </p>
                     </div>
                     <div class="p-6">
@@ -410,12 +446,12 @@ const submit = () => {
                             <div class="space-y-2">
                                 <label for="password"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Şifre *
+                                    Yeni Şifre (isteğe bağlı)
                                 </label>
                                 <div class="relative">
                                     <Key class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                                     <input v-model="form.password" :type="showPassword ? 'text' : 'password'"
-                                        id="password" placeholder="Güçlü bir şifre oluşturun"
+                                        id="password" placeholder="Yeni şifre belirleyin"
                                         class="block w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         :class="{
                                             'border-red-300 focus:ring-red-500': form.errors.password
@@ -456,7 +492,7 @@ const submit = () => {
                             <div class="space-y-2">
                                 <label for="password_confirmation"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Şifre Tekrar *
+                                    Şifre Tekrar
                                 </label>
                                 <div class="relative">
                                     <Key class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
@@ -510,7 +546,7 @@ const submit = () => {
                             Profil Detayları
                         </h2>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Kullanıcının profil bilgilerini ve medya dosyalarını ekleyin
+                            Kullanıcının profil bilgilerini ve medya dosyalarını düzenleyin
                         </p>
                     </div>
                     <div class="p-6 space-y-6">
@@ -612,13 +648,17 @@ const submit = () => {
                                                 <X class="h-3 w-3" />
                                             </button>
                                         </div>
-                                        <div>
+                                        <div class="space-x-2">
                                             <label
                                                 class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer transition-colors duration-200">
                                                 Değiştir
                                                 <input @change="handleProfilePhotoChange" type="file" class="sr-only"
                                                     accept="image/*">
                                             </label>
+                                            <button @click="removeProfilePhoto" type="button"
+                                                class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors duration-200">
+                                                Kaldır
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -674,13 +714,17 @@ const submit = () => {
                                                 <X class="h-3 w-3" />
                                             </button>
                                         </div>
-                                        <div>
+                                        <div class="space-x-2">
                                             <label
                                                 class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer transition-colors duration-200">
                                                 Değiştir
                                                 <input @change="handleCoverPhotoChange" type="file" class="sr-only"
                                                     accept="image/*">
                                             </label>
+                                            <button @click="removeCoverPhoto" type="button"
+                                                class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors duration-200">
+                                                Kaldır
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -707,7 +751,7 @@ const submit = () => {
                             Sosyal Medya Hesapları
                         </h2>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Kullanıcının sosyal medya platformlarını ekleyin
+                            Kullanıcının sosyal medya platformlarını düzenleyin
                         </p>
                     </div>
                     <div class="p-6">
@@ -786,8 +830,8 @@ const submit = () => {
                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div class="text-sm text-gray-600 dark:text-gray-400">
-                            <span class="font-medium">İpucu:</span>
-                            Zorunlu alanları (*) doldurmayı unutmayın
+                            <span class="font-medium">Değişiklikler:</span>
+                            Form güncellendiğinde otomatik olarak kaydedilecektir
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             <Link :href="route('admin.users.index')"
@@ -800,7 +844,7 @@ const submit = () => {
                             İptal Et
                             </Link>
                             <button type="submit" :disabled="form.processing || !isFormValid"
-                                class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center font-medium shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none">
+                                class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center font-medium shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none">
                                 <div v-if="form.processing" class="flex items-center">
                                     <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -810,11 +854,11 @@ const submit = () => {
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                         </path>
                                     </svg>
-                                    Oluşturuluyor...
+                                    Güncelleniyor...
                                 </div>
                                 <div v-else class="flex items-center">
-                                    <UserPlus class="h-4 w-4 mr-2" />
-                                    Kullanıcı Oluştur
+                                    <UserPen class="h-4 w-4 mr-2" />
+                                    Kullanıcıyı Güncelle
                                 </div>
                             </button>
                         </div>

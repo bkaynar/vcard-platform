@@ -46,10 +46,23 @@ class UserController extends Controller
             'profile_photo' => 'nullable|image|max:1024',
             'cover_photo' => 'nullable|image|max:2048',
             'socials' => 'nullable|array',
+            'socials.*.platform' => 'required|string|max:50',
+            'socials.*.username' => 'required|string|max:255',
         ]);
 
-        $data = $request->only(['name', 'username', 'email', 'phone', 'address', 'bio', 'socials']);
+        $data = $request->only(['name', 'username', 'email', 'phone', 'address', 'bio']);
         $data['password'] = Hash::make($request->password);
+
+        // Sosyal medya verilerini işle
+        if ($request->has('socials') && is_array($request->socials)) {
+            $socials = [];
+            foreach ($request->socials as $social) {
+                if (!empty($social['platform']) && !empty($social['username'])) {
+                    $socials[$social['platform']] = $social['username'];
+                }
+            }
+            $data['socials'] = $socials;
+        }
 
         if ($request->hasFile('profile_photo')) {
             $data['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
@@ -63,7 +76,7 @@ class UserController extends Controller
 
         $user->assignRole('user');
 
-        return redirect()->route('admin.users.index');
+        return redirect()->route('admin.users.index')->with('success', 'Kullanıcı başarıyla oluşturuldu!');
     }
 
     /**
@@ -101,12 +114,25 @@ class UserController extends Controller
             'profile_photo' => 'nullable|image|max:1024',
             'cover_photo' => 'nullable|image|max:2048',
             'socials' => 'nullable|array',
+            'socials.*.platform' => 'required|string|max:50',
+            'socials.*.username' => 'required|string|max:255',
         ]);
 
-        $data = $request->only(['name', 'username', 'email', 'phone', 'address', 'bio', 'socials']);
+        $data = $request->only(['name', 'username', 'email', 'phone', 'address', 'bio']);
 
         if ($request->password) {
             $data['password'] = Hash::make($request->password);
+        }
+
+        // Sosyal medya verilerini işle
+        if ($request->has('socials') && is_array($request->socials)) {
+            $socials = [];
+            foreach ($request->socials as $social) {
+                if (!empty($social['platform']) && !empty($social['username'])) {
+                    $socials[$social['platform']] = $social['username'];
+                }
+            }
+            $data['socials'] = $socials;
         }
 
         if ($request->hasFile('profile_photo')) {
@@ -119,7 +145,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index');
+        return redirect()->route('admin.users.index')->with('success', 'Kullanıcı başarıyla güncellendi!');
     }
 
     /**
