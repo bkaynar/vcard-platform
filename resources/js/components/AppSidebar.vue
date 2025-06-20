@@ -10,10 +10,17 @@ import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Ana Sayfa',
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    {
+        title: 'Kullanıcılar',
+        href: '/users',
+        //icon kullanıcıya özel bir ikon olabilir
+        icon: LayoutGrid,
+    },
+   
 ];
 
 const footerNavItems: NavItem[] = [
@@ -49,7 +56,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
