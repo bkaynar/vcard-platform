@@ -18,7 +18,7 @@ class SystemSettingController extends Controller
     public function index()
     {
         $settings = SystemSetting::current();
-        
+
         return Inertia::render('Admin/Settings/Index', [
             'settings' => $settings
         ]);
@@ -36,7 +36,7 @@ class SystemSettingController extends Controller
             'site_keywords' => 'nullable|string|max:1000',
             'site_logo' => 'nullable|image|max:2048',
             'site_favicon' => 'nullable|image|max:512',
-            
+
             // SMTP Ayarları
             'smtp_host' => 'nullable|string|max:255',
             'smtp_port' => 'nullable|integer|min:1|max:65535',
@@ -46,7 +46,7 @@ class SystemSettingController extends Controller
             'smtp_from_address' => 'nullable|email|max:255',
             'smtp_from_name' => 'nullable|string|max:255',
             'smtp_enabled' => 'boolean',
-            
+
             // Shopify Ayarları
             'shopify_store_url' => 'nullable|string|max:255',
             'shopify_access_token' => 'nullable|string|max:255',
@@ -55,21 +55,21 @@ class SystemSettingController extends Controller
             'shopify_keywords' => 'nullable|array',
             'shopify_keywords.*' => 'string|max:100',
             'shopify_enabled' => 'boolean',
-            
+
             // Genel Ayarlar
             'timezone' => 'nullable|string|max:50',
             'language' => 'nullable|string|max:10',
             'currency' => 'nullable|string|max:10',
             'maintenance_mode' => 'boolean',
             'maintenance_message' => 'nullable|string|max:1000',
-            
+
             // SEO Ayarları
             'google_analytics_id' => 'nullable|string|max:50',
             'google_tag_manager_id' => 'nullable|string|max:50',
             'facebook_pixel_id' => 'nullable|string|max:50',
             'custom_head_code' => 'nullable|string|max:5000',
             'custom_body_code' => 'nullable|string|max:5000',
-            
+
             // Sosyal Medya ve E-ticaret
             'social_media_links' => 'nullable|array',
             'tax_rate' => 'nullable|numeric|min:0|max:1',
@@ -131,14 +131,13 @@ class SystemSettingController extends Controller
             // Test e-postası gönder
             Mail::raw('Bu bir SMTP test mesajıdır. Ayarlarınız doğru çalışıyor!', function ($message) use ($request) {
                 $message->to($request->test_email)
-                        ->subject('SMTP Test - VCard Platform');
+                    ->subject('SMTP Test - VCard Platform');
             });
 
             return response()->json([
                 'success' => true,
                 'message' => 'SMTP ayarları başarıyla test edildi! Test e-postası gönderildi.'
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -160,7 +159,7 @@ class SystemSettingController extends Controller
         try {
             // Shopify API'yi test et
             $url = "https://{$request->shopify_store_url}/admin/api/2023-10/shop.json";
-            
+
             $headers = [
                 'X-Shopify-Access-Token: ' . $request->shopify_access_token,
                 'Content-Type: application/json',
@@ -208,15 +207,9 @@ class SystemSettingController extends Controller
             Artisan::call('view:clear');
             Artisan::call('route:clear');
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Önbellek başarıyla temizlendi!'
-            ]);
+            return redirect()->back()->with('success', 'Önbellek başarıyla temizlendi!');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Önbellek temizleme hatası: ' . $e->getMessage()
-            ], 422);
+            return redirect()->back()->with('error', 'Önbellek temizleme hatası: ' . $e->getMessage());
         }
     }
 }
