@@ -60,8 +60,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-// VCard Public Routes (Herkes erişebilir)
-Route::get('/vcard/{username}', [VCardController::class, 'show'])->name('vcard.show');
-
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+
+// VCard Public Route (En sonda, çakışma olmaması için)
+Route::get('/{username}', [\App\Http\Controllers\VCardController::class, 'show'])->name('vcard.show');
