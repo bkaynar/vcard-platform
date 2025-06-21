@@ -106,13 +106,20 @@ class DashboardController extends Controller
             ];
         }
 
-        // Saatlik ziyaret dağılımı (bugün) - SQLite uyumlu
+        // Saatlik ziyaret dağılımı (bugün) - Veritabanı uyumlu
         $hourlyVisits = [];
         for ($hour = 0; $hour < 24; $hour++) {
-            $count = VcardVisit::where('user_id', $user->id)
-                ->whereDate('visited_at', today())
-                ->whereRaw("strftime('%H', visited_at) = ?", [sprintf('%02d', $hour)])
-                ->count();
+            $query = VcardVisit::where('user_id', $user->id)
+                ->whereDate('visited_at', today());
+
+            // Veritabanı tipine göre saat filtresi
+            if (config('database.default') === 'mysql') {
+                $query->whereRaw("HOUR(visited_at) = ?", [$hour]);
+            } else {
+                $query->whereRaw("strftime('%H', visited_at) = ?", [sprintf('%02d', $hour)]);
+            }
+
+            $count = $query->count();
 
             $hourlyVisits[] = [
                 'hour' => $hour,
@@ -121,10 +128,18 @@ class DashboardController extends Controller
             ];
         }
 
-        // En popüler saatler (genel) - SQLite uyumlu
-        $popularHours = VcardVisit::where('user_id', $user->id)
-            ->selectRaw("strftime('%H', visited_at) as hour, COUNT(*) as count")
-            ->groupByRaw("strftime('%H', visited_at)")
+        // En popüler saatler (genel) - Veritabanı uyumlu
+        $popularHoursQuery = VcardVisit::where('user_id', $user->id);
+
+        if (config('database.default') === 'mysql') {
+            $popularHoursQuery->selectRaw("HOUR(visited_at) as hour, COUNT(*) as count")
+                ->groupByRaw("HOUR(visited_at)");
+        } else {
+            $popularHoursQuery->selectRaw("strftime('%H', visited_at) as hour, COUNT(*) as count")
+                ->groupByRaw("strftime('%H', visited_at)");
+        }
+
+        $popularHours = $popularHoursQuery
             ->orderBy('count', 'desc')
             ->limit(5)
             ->get()
