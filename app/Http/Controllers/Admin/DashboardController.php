@@ -79,6 +79,12 @@ class DashboardController extends Controller
             'cache_status' => $this->getCacheStatus(),
             'smtp_status' => $this->getSmtpStatus(),
             'disk_usage' => $this->getDiskUsage(),
+            'ram_usage' => [
+                'total' => $this->formatBytes(memory_get_usage(true)),
+                'used' => $this->formatBytes(memory_get_usage()),
+                'free' => $this->formatBytes(memory_get_peak_usage(true) - memory_get_usage()),
+                'usage_percent' => round((memory_get_usage() / memory_get_peak_usage(true)) * 100, 2)
+            ],
             'last_backup' => $this->getLastBackupDate()
         ];
 

@@ -1,23 +1,47 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\User;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SystemSettingController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\User\DashboardController as UserDashboardController;
+use App\Http\Controllers\User\ProfileController as UserProfileController;
+use App\Http\Controllers\VCardController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Admin Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard')
         ->middleware('role:admin');
 
-    Route::get('/dashboard', fn() => redirect()->route('admin.dashboard'))->name('dashboard');
+    // Ana dashboard - role'a göre yönlendirme
+    Route::get('/dashboard', function () {
+        /** @var User $user */
+        $user = Auth::user();
+        if ($user && $user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        return app(UserDashboardController::class)->index();
+    })->name('dashboard');
 
-    Route::get('/user/dashboard', fn() => Inertia::render('User/Dashboard'))->name('user.dashboard')
+    // User Dashboard (direkt erişim)
+    Route::get('/user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard')
         ->middleware('role:user');
+
+    // User Profile Routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/user/profile/edit', [UserProfileController::class, 'edit'])->name('user.profile.edit');
+        Route::post('/user/profile', [UserProfileController::class, 'update'])->name('user.profile.update');
+        Route::delete('/user/profile/photo', [UserProfileController::class, 'destroyProfilePhoto'])->name('user.profile.photo.destroy');
+        Route::delete('/user/profile/cover', [UserProfileController::class, 'destroyCoverPhoto'])->name('user.profile.cover.destroy');
+        Route::get('/user/statistics', [UserDashboardController::class, 'statistics'])->name('user.statistics');
+    });
 
     Route::resource('/admin/users', UserController::class)->names('admin.users');
 
@@ -35,6 +59,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/admin/settings/clear-cache', [SystemSettingController::class, 'clearCache'])->name('admin.settings.clear-cache');
     });
 });
+
+// VCard Public Routes (Herkes erişebilir)
+Route::get('/vcard/{username}', [VCardController::class, 'show'])->name('vcard.show');
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

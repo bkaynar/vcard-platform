@@ -13,7 +13,7 @@ import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
-        title: 'Password settings',
+        title: 'Şifre Ayarları',
         href: '/settings/password',
     },
 ];
@@ -56,11 +56,13 @@ const updatePassword = () => {
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                <HeadingSmall title="Şifrenizi Güncelleyin" description="Güvenliğiniz için şifrenizi düzenli olarak güncelleyin." />
 
                 <form @submit.prevent="updatePassword" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="current_password">Current password</Label>
+                        <Label for="current_password">
+                            Mevcut şifre
+                        </Label>
                         <Input
                             id="current_password"
                             ref="currentPasswordInput"
@@ -68,13 +70,15 @@ const updatePassword = () => {
                             type="password"
                             class="mt-1 block w-full"
                             autocomplete="current-password"
-                            placeholder="Current password"
+                            placeholder="Mevcut şifreniz"
                         />
                         <InputError :message="form.errors.current_password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password">New password</Label>
+                        <Label for="password">
+                            Yeni şifre
+                        </Label>
                         <Input
                             id="password"
                             ref="passwordInput"
@@ -82,26 +86,31 @@ const updatePassword = () => {
                             type="password"
                             class="mt-1 block w-full"
                             autocomplete="new-password"
-                            placeholder="New password"
+                            placeholder="Yeni şifreniz"
                         />
                         <InputError :message="form.errors.password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm password</Label>
+                        <Label for="password_confirmation">
+                            Şifreyi onayla
+                        </Label>
                         <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
                             class="mt-1 block w-full"
                             autocomplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Yeni şifrenizi onaylayın"
                         />
                         <InputError :message="form.errors.password_confirmation" />
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save password</Button>
+                        <Button :disabled="form.processing">
+                            <span v-if="form.processing">Güncelleniyor...</span>
+                            <span v-else>Şifreyi Güncelle</span>
+                        </Button>
 
                         <Transition
                             enter-active-class="transition ease-in-out"

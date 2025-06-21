@@ -46,6 +46,11 @@ class User extends Authenticatable
     ];
 
     /**
+     * JSON response'ta eklenmesi gereken computed alanlar.
+     */
+    protected $appends = ['role'];
+
+    /**
      * Profil fotoğrafı tam URL olarak döner.
      */
     protected function profilePhotoUrl(): Attribute
@@ -82,5 +87,15 @@ class User extends Authenticatable
     public function vcardVisits()
     {
         return $this->hasMany(VcardVisit::class);
+    }
+
+    /**
+     * Kullanıcının rolünü döner.
+     */
+    protected function role(): Attribute
+    {
+        return Attribute::get(
+            fn() => $this->getRoleNames()->first() ?? 'user'
+        );
     }
 }
