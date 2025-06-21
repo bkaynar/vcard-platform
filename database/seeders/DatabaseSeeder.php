@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
     {
         // Önce temel seeder'ları çalıştır
         $this->call([
-            RoleSeeder::class,
             UserSeeder::class,
             SystemSettingSeeder::class, // Sistem ayarları seeder'ı
             VcardVisitSeeder::class, // VCard ziyaret test verileri
