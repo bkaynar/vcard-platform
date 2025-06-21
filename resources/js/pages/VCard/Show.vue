@@ -377,14 +377,7 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <!-- QR Code Button -->
-                    <div class="mt-6">
-                        <button @click="openQrModal"
-                            class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-green-600 to-teal-700 text-white rounded-lg hover:from-green-700 hover:to-teal-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg font-medium">
-                            <QrCode class="w-5 h-5 mr-2" />
-                            QR Kodunu Göster
-                        </button>
-                    </div>
+            
 
                     <!-- QR Code Modal -->
                     <transition name="modal">

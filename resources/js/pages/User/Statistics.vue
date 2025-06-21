@@ -160,30 +160,29 @@ const chartDataHourly = props.charts.hourly_visits.map(item => ({
             </div>
 
             <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-6">
                 <!-- Son 30 Gün Grafiği -->
                 <div
-                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700 overflow-x-auto">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                         <TrendingUp class="w-5 h-5 mr-2" />
                         Son 30 Gün Ziyaret Trendi
                     </h3>
-                    <SimpleChart :data="chartData30Days" type="line" color="#3B82F6" :height="300" />
+                    <SimpleChart :data="chartData30Days" type="line" color="#3B82F6" :height="250" />
                 </div>
-
                 <!-- Saatlik Ziyaret Dağılımı -->
                 <div
-                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700 overflow-x-auto">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                         <Clock class="w-5 h-5 mr-2" />
                         Bugün Saatlik Ziyaret Dağılımı
                     </h3>
-                    <SimpleChart :data="chartDataHourly" type="bar" color="#10B981" :height="300" />
+                    <SimpleChart :data="chartDataHourly" type="bar" color="#10B981" :height="250" />
                 </div>
             </div>
 
             <!-- Popular Hours & Recent Visits -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- En Popüler Saatler -->
                 <div
                     class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">

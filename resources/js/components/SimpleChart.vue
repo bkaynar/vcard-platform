@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-container">
+    <div class="chart-container w-full overflow-x-auto">
         <div class="mb-4 flex justify-between items-center">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
             <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -19,7 +19,7 @@
             <p class="text-gray-500 dark:text-gray-400">{{ emptyMessage || 'Veri bulunamadı' }}</p>
         </div>
 
-        <div v-else class="relative">
+        <div v-else class="relative w-full min-w-[600px]">
             <!-- Y Axis Labels -->
             <div
                 class="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 pr-3 w-12 text-right">
@@ -31,9 +31,10 @@
             </div>
 
             <!-- Chart Area -->
-            <div class="ml-12">
-                <svg :width="chartWidth" :height="chartHeight"
-                    class="border-l border-b border-gray-200 dark:border-gray-600">
+            <div class="ml-12 w-full">
+                <svg :width="chartWidth" :height="chartHeight + 32" viewBox="0 0 600 232"
+                    preserveAspectRatio="xMidYMid meet"
+                    class="border-l border-b border-gray-200 dark:border-gray-600 w-full min-w-[600px]">
                     <!-- Grid Lines -->
                     <g v-for="i in 5" :key="`grid-${i}`">
                         <line :x1="0" :y1="(chartHeight / 4) * (i - 1)" :x2="chartWidth"
@@ -64,25 +65,26 @@
                                 @mouseover="showTooltip(point, $event)" @mouseout="hideTooltip" />
                         </g>
                     </g>
+
+                    <!-- X Axis Labels (SVG) -->
+                    <g v-if="props.showXLabels">
+                        <text v-for="label in xLabels" :key="`label-${label.index}`"
+                            :x="(chartWidth / chartData.length) * label.index + (chartWidth / chartData.length) * 0.5"
+                            :y="chartHeight + 18" text-anchor="middle" font-size="12" fill="#94a3b8"
+                            :transform="`rotate(-45 ${(chartWidth / chartData.length) * label.index + (chartWidth / chartData.length) * 0.5},${chartHeight + 18})`">
+                            {{ formatDate(label.date) }}
+                        </text>
+                    </g>
                 </svg>
 
-                <!-- X Axis Labels -->
-                <div v-if="props.showXLabels" class="relative flex mt-2 text-xs text-gray-500 dark:text-gray-400 h-6">
-                    <span v-for="(point, index) in chartData" :key="`label-${index}`"
-                        class="absolute transform -translate-x-1/2 text-center whitespace-nowrap"
-                        :style="{ left: ((chartWidth / chartData.length) * index + (chartWidth / chartData.length) * 0.5) + 'px' }">
-                        {{ formatDate(point.date) }}
-                    </span>
-                </div>
-            </div>
-
-            <!-- Tooltip -->
-            <div v-if="tooltip.show" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-                class="absolute bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-lg text-sm pointer-events-none z-10 transform -translate-x-1/2 -translate-y-full">
-                <div class="font-medium">{{ tooltip.date }}</div>
-                <div>{{ tooltip.value }} ziyaret</div>
-                <div
-                    class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100">
+                <!-- Tooltip -->
+                <div v-if="tooltip.show" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
+                    class="absolute bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-3 py-2 rounded-lg shadow-lg text-sm pointer-events-none z-10 transform -translate-x-1/2 -translate-y-full">
+                    <div class="font-medium">{{ tooltip.date }}</div>
+                    <div>{{ tooltip.value }} ziyaret</div>
+                    <div
+                        class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100">
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,6 +165,27 @@ const linePath = computed(() => {
     })
 
     return `M ${points.join(' L ')}`
+})
+
+// X ekseni için gösterilecek label indexlerini hesaplayan computed property
+const xLabelIndexes = computed(() => {
+    const arr = [];
+    const len = chartData.value.length;
+    if (len < 16) {
+        for (let i = 0; i < len; i++) arr.push(i);
+    } else {
+        const step = Math.ceil(len / 8);
+        for (let i = 0; i < len; i += step) arr.push(i);
+    }
+    return arr;
+})
+
+// X ekseni için gösterilecek label'ları döndüren computed property
+const xLabels = computed(() => {
+    return xLabelIndexes.value.map(i => ({
+        index: i,
+        date: chartData.value[i]?.date
+    }));
 })
 
 // Methods
