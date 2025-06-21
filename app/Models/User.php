@@ -48,7 +48,7 @@ class User extends Authenticatable
     /**
      * JSON response'ta eklenmesi gereken computed alanlar.
      */
-    protected $appends = ['role'];
+    protected $appends = ['main_role'];
 
     /**
      * Profil fotoğrafı tam URL olarak döner.
@@ -90,9 +90,9 @@ class User extends Authenticatable
     }
 
     /**
-     * Kullanıcının rolünü döner.
+     * Kullanıcının ana rolünü döner.
      */
-    protected function role(): Attribute
+    protected function mainRole(): Attribute
     {
         return Attribute::get(
             fn() => $this->getRoleNames()->first() ?? 'user'
