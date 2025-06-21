@@ -43,8 +43,8 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
-            'profile_photo' => 'nullable|image|max:1024',
-            'cover_photo' => 'nullable|image|max:2048',
+            'profile_photo' => 'nullable|image|max:5120',   // 5 MB
+            'cover_photo'   => 'nullable|image|max:5120',   // 5 MB
             'socials' => 'nullable|array',
             'socials.*.platform' => 'required|string|max:50',
             'socials.*.username' => 'required|string|max:255',
@@ -111,8 +111,8 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
-            'profile_photo' => 'nullable|image|max:1024',
-            'cover_photo' => 'nullable|image|max:2048',
+            'profile_photo' => 'nullable|image|max:5120',   // 5 MB
+            'cover_photo'   => 'nullable|image|max:5120',   // 5 MB
             'socials' => 'nullable|array',
             'socials.*.platform' => 'required|string|max:50',
             'socials.*.username' => 'required|string|max:255',
