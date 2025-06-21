@@ -45,14 +45,18 @@ const submit = () => {
 
                 <div class="grid gap-2">
                     <Label for="password">Password</Label>
-                    <Input id="password" type="password" required :tabindex="3" autocomplete="off"
-                        v-model="form.password" placeholder="Password" />
+                    <Input id="password" type="password" required :tabindex="3" autocomplete="off" readonly
+                        @focus="($event.target as HTMLInputElement).removeAttribute('readonly')"
+                        @blur="($event.target as HTMLInputElement).setAttribute('readonly', '')" v-model="form.password"
+                        placeholder="Password" />
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="password_confirmation">Confirm password</Label>
-                    <Input id="password_confirmation" type="password" required :tabindex="4" autocomplete="off"
+                    <Input id="password_confirmation" type="password" required :tabindex="4" autocomplete="off" readonly
+                        @focus="($event.target as HTMLInputElement).removeAttribute('readonly')"
+                        @blur="($event.target as HTMLInputElement).setAttribute('readonly', '')"
                         v-model="form.password_confirmation" placeholder="Confirm password" />
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
