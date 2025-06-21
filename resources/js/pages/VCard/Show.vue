@@ -73,7 +73,7 @@ const getSocialColor = (platform: string) => {
         case 'instagram': return 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600';
         case 'linkedin': return 'bg-blue-700 hover:bg-blue-800';
         case 'youtube': return 'bg-red-600 hover:bg-red-700';
-        case 'tiktok': return 'bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600';
+        case 'tiktok': return 'bg-black hover:bg-gray-800';
         case 'snapchat': return 'bg-yellow-400 hover:bg-yellow-500';
         case 'pinterest': return 'bg-red-500 hover:bg-red-600';
         case 'github': return 'bg-gray-800 hover:bg-gray-900';
