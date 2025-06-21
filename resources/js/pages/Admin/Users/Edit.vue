@@ -237,7 +237,19 @@ const getSocialLabel = (platform: string) => {
 };
 
 const submit = () => {
-    form.put(route('admin.users.update', props.user.id));
+    // _method parametresini form'a ekle
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT'
+    })).post(route('admin.users.update', props.user.id), {
+        forceFormData: true,
+        onSuccess: () => {
+            // Başarılı olursa users sayfasına yönlendir
+        },
+        onError: (errors) => {
+            console.error('Form gönderim hatası:', errors);
+        }
+    });
 };
 </script>
 
@@ -280,7 +292,7 @@ const submit = () => {
                     <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
                         <span>Form Tamamlanma</span>
                         <span>{{Math.round(Object.values(form.data()).filter(val => val !== '' && val !== null).length
-                            / Object.keys(form.data()).length * 100) }}%</span>
+                            / Object.keys(form.data()).length * 100)}}%</span>
                     </div>
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div class="bg-gradient-to-r from-green-500 to-teal-600 h-2 rounded-full transition-all duration-300"

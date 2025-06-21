@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
+use Intervention\Image\ImageManager;
 use Intervention\Image\Facades\Image;
 use Exception;
 
@@ -40,8 +42,8 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:' . User::class,
-            'email' => 'required|string|email|max:255|unique:' . User::class,
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
@@ -49,8 +51,8 @@ class UserController extends Controller
             'profile_photo' => 'nullable|image|max:5120',   // 5 MB
             'cover_photo'   => 'nullable|image|max:5120',   // 5 MB
             'socials' => 'nullable|array',
-            'socials.*.platform' => 'required|string|max:50',
-            'socials.*.username' => 'required|string|max:255',
+            'socials.*.platform' => 'required_with:socials.*.username|string|max:50',
+            'socials.*.username' => 'required_with:socials.*.platform|string|max:255',
         ]);
 
         $data = $request->only(['name', 'username', 'email', 'phone', 'address', 'bio']);
@@ -70,14 +72,19 @@ class UserController extends Controller
         if ($request->hasFile('profile_photo')) {
             $file = $request->file('profile_photo');
             $filename = uniqid('profile_') . '.webp';
-
+            $manager = new ImageManager(
+                new \Intervention\Image\Drivers\Gd\Driver()
+            );
             // Webp olarak dönüştür ve public diskine kaydet
             try {
-                $image = Image::make($file)->encode('webp', 80); // 80 kalite (isteğe bağlı)
+
+                $image = $manager->read($file->getPathname())
+                    ->cover(512, 512) // örnek boyut vs. istersen
+                    ->toWebp(80);     // kalite
 
                 // 'profile-photos' klasörüne kaydet
                 $path = 'profile-photos/' . $filename;
-                \Storage::disk('public')->put($path, (string) $image);
+                Storage::disk('public')->put($path, (string) $image);
 
                 $data['profile_photo'] = $path;
             } catch (Exception $e) {
@@ -88,12 +95,16 @@ class UserController extends Controller
         if ($request->hasFile('cover_photo')) {
             $file = $request->file('cover_photo');
             $filename = uniqid('cover_') . '.webp';
-
+            $manager = new ImageManager(
+                new \Intervention\Image\Drivers\Gd\Driver()
+            );
             try {
-                $image = Image::make($file)->encode('webp', 80);
+                $image = $manager->read($file->getPathname())
+                    ->cover(1920, 1080) // örnek boyut vs. istersen
+                    ->toWebp(80);       // kalite
 
                 $path = 'cover-photos/' . $filename;
-                \Storage::disk('public')->put($path, (string) $image);
+                Storage::disk('public')->put($path, (string) $image);
 
                 $data['cover_photo'] = $path;
             } catch (Exception $e) {
@@ -132,42 +143,20 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        // Gelen verileri logla
-        \Log::info('Gelen veriler:', $request->all());
-
-        // Gelen verileri detaylı logla
-        \Log::info('Request tüm veriler:', ['data' => $request->all()]);
-        \Log::info('Request input verileri:', ['data' => $request->input()]);
-        \Log::info('Request name:', ['value' => $request->name]);
-        \Log::info('Request username:', ['value' => $request->username]);
-        \Log::info('Request email:', ['value' => $request->email]);
-
-        // Gelen isteğin header bilgilerini logla
-        \Log::info('Request headers:', ['headers' => $request->headers->all()]);
-        \Log::info('Request method:', ['method' => $request->method()]);
-        \Log::info('Request content:', ['content' => $request->getContent()]);
-
-        // Doğrulama kurallarını kontrol et
-        // Doğrulama hatalarını logla
-        try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:' . User::class . ',' . $user->id,
-                'email' => 'required|string|email|max:255|unique:' . User::class . ',' . $user->id,
-                'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
-                'phone' => 'nullable|string|max:255',
-                'address' => 'nullable|string|max:255',
-                'bio' => 'nullable|string',
-                'profile_photo' => 'nullable|image|max:5120',   // 5 MB
-                'cover_photo'   => 'nullable|image|max:5120',   // 5 MB
-                'socials' => 'nullable|array',
-                'socials.*.platform' => 'required|string|max:50',
-                'socials.*.username' => 'required|string|max:255',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Doğrulama hatası:', $e->errors());
-            throw $e;
-        }
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
+            'profile_photo' => 'nullable|image|max:5120',   // 5 MB
+            'cover_photo'   => 'nullable|image|max:5120',   // 5 MB
+            'socials' => 'nullable|array',
+            'socials.*.platform' => 'required_with:socials.*.username|string|max:50',
+            'socials.*.username' => 'required_with:socials.*.platform|string|max:255',
+        ]);
 
         $data = $request->only(['name', 'username', 'email', 'phone', 'address', 'bio']);
 
@@ -189,14 +178,18 @@ class UserController extends Controller
         if ($request->hasFile('profile_photo')) {
             $file = $request->file('profile_photo');
             $filename = uniqid('profile_') . '.webp';
-
+            $manager = new ImageManager(
+                new \Intervention\Image\Drivers\Gd\Driver()
+            );
             // Webp olarak dönüştür ve public diskine kaydet
             try {
-                $image = Image::make($file)->encode('webp', 80); // 80 kalite (isteğe bağlı)
+                $image = $manager->read($file->getPathname())
+                    ->cover(512, 512) // örnek boyut vs. istersen
+                    ->toWebp(80);     // kalite
 
                 // 'profile-photos' klasörüne kaydet
                 $path = 'profile-photos/' . $filename;
-                \Storage::disk('public')->put($path, (string) $image);
+                Storage::disk('public')->put($path, (string) $image);
 
                 $data['profile_photo'] = $path;
             } catch (Exception $e) {
@@ -207,12 +200,16 @@ class UserController extends Controller
         if ($request->hasFile('cover_photo')) {
             $file = $request->file('cover_photo');
             $filename = uniqid('cover_') . '.webp';
-
+            $manager = new ImageManager(
+                new \Intervention\Image\Drivers\Gd\Driver()
+            );
             try {
-                $image = Image::make($file)->encode('webp', 80);
+                $image = $manager->read($file->getPathname())
+                    ->cover(1920, 1080) // örnek boyut vs. istersen
+                    ->toWebp(80);       // kalite
 
                 $path = 'cover-photos/' . $filename;
-                \Storage::disk('public')->put($path, (string) $image);
+                Storage::disk('public')->put($path, (string) $image);
 
                 $data['cover_photo'] = $path;
             } catch (Exception $e) {
