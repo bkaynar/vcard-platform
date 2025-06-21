@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            UserDataSeeder::class, // Yeni eklenen seeder
+            UserDataSeeder::class,
+            SystemSettingSeeder::class, // Sistem ayarları seeder'ı
+            VcardVisitSeeder::class, // VCard ziyaret test verileri
         ]);
 
         // User::factory(10)->create();

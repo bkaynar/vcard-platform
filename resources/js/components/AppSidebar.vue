@@ -19,6 +19,11 @@ const mainNavItems: NavItem[] = [
         href: route('admin.users.index'),
         icon: Users,
     },
+    {
+        title: 'Ayarlar',
+        href: route('admin.settings.index'),
+        icon: LayoutGrid,
+    }
 ];
 
 const footerNavItems: NavItem[] = [
