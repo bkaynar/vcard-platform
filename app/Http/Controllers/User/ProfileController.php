@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Encoders\WebpEncoder;
+
 
 class ProfileController extends Controller
 {
@@ -58,6 +61,9 @@ class ProfileController extends Controller
             'socials.*.username' => ['required', 'string', 'max:255'],
         ]);
 
+        // ImageManager oluştur (her iki işlemde de kullanacağız)
+        $manager = new ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+
         // Profil fotoğrafı yükleme
         if ($request->hasFile('profile_photo')) {
             // Eski fotoğrafı sil
@@ -65,8 +71,20 @@ class ProfileController extends Controller
                 Storage::disk('public')->delete($user->profile_photo);
             }
 
-            $profilePhotoPath = $request->file('profile_photo')->store('profile-photos', 'public');
-            $user->profile_photo = $profilePhotoPath;
+            $file = $request->file('profile_photo');
+            $filename = uniqid('profile_') . '.webp';
+
+            try {
+                // Yeni API: read -> encode
+                $image = $manager->read($file->getPathname())->encode(new WebpEncoder(), 80);
+
+                $path = 'profile-photos/' . $filename;
+                Storage::disk('public')->put($path, (string)$image);
+
+                $user->profile_photo = $path;
+            } catch (\Exception $e) {
+                return back()->withErrors(['profile_photo' => 'Profil fotoğrafı işlenirken bir hata oluştu: ' . $e->getMessage()]);
+            }
         }
 
         // Kapak fotoğrafı yükleme
@@ -76,8 +94,19 @@ class ProfileController extends Controller
                 Storage::disk('public')->delete($user->cover_photo);
             }
 
-            $coverPhotoPath = $request->file('cover_photo')->store('cover-photos', 'public');
-            $user->cover_photo = $coverPhotoPath;
+            $file = $request->file('cover_photo');
+            $filename = uniqid('cover_') . '.webp';
+
+            try {
+                $image = $manager->read($file->getPathname())->encode(new WebpEncoder(), 80);
+
+                $path = 'cover-photos/' . $filename;
+                Storage::disk('public')->put($path, (string)$image);
+
+                $user->cover_photo = $path;
+            } catch (\Exception $e) {
+                return back()->withErrors(['cover_photo' => 'Kapak fotoğrafı işlenirken bir hata oluştu: ' . $e->getMessage()]);
+            }
         }
 
         // Sosyal medya verilerini işle
