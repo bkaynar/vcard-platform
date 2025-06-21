@@ -301,7 +301,7 @@ const submit = () => {
                                     <input v-model="form.name" type="text" required
                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white">
                                     <div v-if="form.errors.name" class="text-red-500 text-sm mt-1">{{ form.errors.name
-                                    }}</div>
+                                        }}</div>
                                 </div>
 
                                 <div>
@@ -312,7 +312,7 @@ const submit = () => {
                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white">
                                     <div v-if="form.errors.username" class="text-red-500 text-sm mt-1">{{
                                         form.errors.username
-                                    }}</div>
+                                        }}</div>
                                 </div>
 
                                 <div>
@@ -323,7 +323,7 @@ const submit = () => {
                                     <input v-model="form.email" type="email" required
                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white">
                                     <div v-if="form.errors.email" class="text-red-500 text-sm mt-1">{{ form.errors.email
-                                    }}
+                                        }}
                                     </div>
                                 </div>
 
@@ -335,7 +335,7 @@ const submit = () => {
                                     <input v-model="form.phone" type="tel"
                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white">
                                     <div v-if="form.errors.phone" class="text-red-500 text-sm mt-1">{{ form.errors.phone
-                                    }}
+                                        }}
                                     </div>
                                 </div>
                             </div>
@@ -348,7 +348,7 @@ const submit = () => {
                                 <input v-model="form.address" type="text"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white">
                                 <div v-if="form.errors.address" class="text-red-500 text-sm mt-1">{{ form.errors.address
-                                }}
+                                    }}
                                 </div>
                             </div>
 
@@ -381,44 +381,57 @@ const submit = () => {
                                 <!-- Mevcut Sosyal Medya Hesapları -->
                                 <div v-if="form.socials.length > 0" class="space-y-4 mb-6">
                                     <div v-for="(social, index) in form.socials" :key="index"
-                                        class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                                        <!-- Platform Seçimi -->
-                                        <div class="flex-shrink-0">
-                                            <select :value="social.platform"
-                                                @change="updateSocialPlatform(index, ($event.target as HTMLSelectElement).value)"
-                                                class="block w-48 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200">
-                                                <option value="">Platform Seçin</option>
-                                                <option v-for="platform in socialPlatforms" :key="platform.value"
-                                                    :value="platform.value">
-                                                    {{ platform.icon }} {{ platform.label }}
-                                                </option>
-                                            </select>
-                                        </div>
-
-                                        <!-- Kullanıcı Adı -->
-                                        <div class="flex-grow">
-                                            <div class="relative">
-                                                <div v-if="social.platform"
-                                                    class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
-                                                    <span class="text-lg">{{ getSocialIcon(social.platform) }}</span>
-                                                </div>
-                                                <input :value="social.username"
-                                                    @input="updateSocialUsername(index, ($event.target as HTMLInputElement).value)"
-                                                    type="text"
-                                                    :placeholder="social.platform ? `${getSocialLabel(social.platform)} kullanıcı adınız` : 'Önce platform seçin'"
-                                                    :class="[
-                                                        'block w-full py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200',
-                                                        social.platform ? 'pl-12 pr-4' : 'px-4'
-                                                    ]" :disabled="!social.platform">
+                                        class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                        <!-- Mobil ve masaüstü responsive layout -->
+                                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                            <!-- Platform Seçimi -->
+                                            <div class="w-full sm:w-auto sm:flex-shrink-0">
+                                                <label
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 sm:hidden">
+                                                    Platform
+                                                </label>
+                                                <select :value="social.platform"
+                                                    @change="updateSocialPlatform(index, ($event.target as HTMLSelectElement).value)"
+                                                    class="block w-full sm:w-48 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200">
+                                                    <option value="">Platform Seçin</option>
+                                                    <option v-for="platform in socialPlatforms" :key="platform.value"
+                                                        :value="platform.value">
+                                                        {{ platform.icon }} {{ platform.label }}
+                                                    </option>
+                                                </select>
                                             </div>
-                                        </div>
 
-                                        <!-- Kaldır Butonu -->
-                                        <div class="flex-shrink-0">
-                                            <button @click="removeSocialMedia(index)" type="button"
-                                                class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200">
-                                                <X class="h-5 w-5" />
-                                            </button>
+                                            <!-- Kullanıcı Adı -->
+                                            <div class="flex-grow">
+                                                <label
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 sm:hidden">
+                                                    Kullanıcı Adı
+                                                </label>
+                                                <div class="relative">
+                                                    <div v-if="social.platform"
+                                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                                                        <span class="text-lg">{{ getSocialIcon(social.platform)
+                                                            }}</span>
+                                                    </div>
+                                                    <input :value="social.username"
+                                                        @input="updateSocialUsername(index, ($event.target as HTMLInputElement).value)"
+                                                        type="text"
+                                                        :placeholder="social.platform ? `${getSocialLabel(social.platform)} kullanıcı adınız` : 'Önce platform seçin'"
+                                                        :class="[
+                                                            'block w-full py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200',
+                                                            social.platform ? 'pl-12 pr-4' : 'px-4'
+                                                        ]" :disabled="!social.platform">
+                                                </div>
+                                            </div>
+
+                                            <!-- Kaldır Butonu -->
+                                            <div class="flex justify-end sm:flex-shrink-0">
+                                                <button @click="removeSocialMedia(index)" type="button"
+                                                    class="inline-flex items-center px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 text-sm font-medium">
+                                                    <X class="h-4 w-4 mr-1" />
+                                                    <span class="sm:hidden">Kaldır</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

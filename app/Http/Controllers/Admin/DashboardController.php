@@ -18,9 +18,13 @@ class DashboardController extends Controller
     public function index()
     {
         // Ana İstatistikler
-        $totalUsers = User::count();
+        $totalUsers = User::whereHas('roles', function ($query) {
+            $query->where('name', 'user');
+        })->count();
         $totalVcardVisits = VcardVisit::count();
-        $monthlyNewUsers = User::whereMonth('created_at', Carbon::now()->month)
+        $monthlyNewUsers = User::whereHas('roles', function ($query) {
+            $query->where('name', 'user');
+        })->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->count();
 

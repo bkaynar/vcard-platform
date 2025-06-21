@@ -270,7 +270,7 @@ onMounted(() => {
 
 <template>
 
-    <Head :title="`${props.user.name} - VCard`" />
+    <Head :title="`${props.user.name}`" />
 
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="max-w-2xl mx-auto py-8 px-4">
