@@ -13,7 +13,7 @@ const page = usePage();
 // Kullanıcı rolüne göre nav items
 const mainNavItems = computed((): NavItem[] => {
     const user = page.props.auth?.user;
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.main_role === 'admin';
 
     if (isAdmin) {
         // Admin menüleri
